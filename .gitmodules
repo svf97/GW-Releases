@@ -4,6 +4,3 @@
 [submodule "k8-rebuild"]
 	path = k8-rebuild
 	url = https://github.com/k8-proxy/k8-rebuild
-[submodule "s-k8-releases"]
-	path = s-k8-releases
-	url = https://github.com/k8-proxy-glacier/s-k8-releases.git
