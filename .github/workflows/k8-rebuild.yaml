@@ -97,6 +97,12 @@ jobs:
           echo ::set-output name=instance_id::$instance_id
           echo ::set-output name=ami_id::$ami_id
 
+      - name: Checkout submodules
+        uses: actions/checkout@v2
+        with:
+          repository: k8-proxy/vmware-scripts
+          path: vmware-scripts
+
       - name: Run tests on the VM
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
