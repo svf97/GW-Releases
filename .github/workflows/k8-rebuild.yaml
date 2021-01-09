@@ -29,6 +29,11 @@ jobs:
       with:
         submodules: true
 
+    # - name: Update submodules
+    #   run: |
+    #     git submodule foreach git fetch
+    #     git submodule foreach git pull origin main
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -47,6 +52,7 @@ jobs:
         
     - name: Build AMI/OVA
       run: |
+        cd k8-rebuild
         chmod +x packer/ova-check.sh
         packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=k8-rebuild -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} packer/aws-ova.json
 
@@ -90,11 +96,6 @@ jobs:
           echo ::set-output name=instance_ip::$instance_ip
           echo ::set-output name=instance_id::$instance_id
           echo ::set-output name=ami_id::$ami_id
-      - name: Checkout submodules
-        uses: actions/checkout@v2
-        with:
-          repository: k8-proxy/vmware-scripts
-          path: vmware-scripts
 
       - name: Run tests on the VM
         env:
