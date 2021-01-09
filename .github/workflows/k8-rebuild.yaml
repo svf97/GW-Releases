@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ main, github_actions ]
-    paths-ignore: 
+    paths-ignore:
       - 'aws-jmeter-test-engine'
       - 'gp-load-balancer'
       - 'GW-proxy'
