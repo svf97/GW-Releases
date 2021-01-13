@@ -122,9 +122,11 @@ jobs:
           instance_id="${{ steps.deploy.outputs.instance_id }}"
           instance_ip="${{ steps.deploy.outputs.instance_ip }}"
           ami_id="${{ steps.deploy.outputs.ami_id }}"
-          cd vmware-scripts/HealthCheck
-          sed -i "s/54.77.168.168/$instance_ip/g" config.yml
           sudo apt-get -y install c-icap
+          cd vmware-scripts/HealthCheck
+          git fetch && git checkout icap_server # TODO: remove this line
+          sed -i "/icmp/I,+1 d" config.yml
+          sed -i "s/54.77.168.168/$instance_ip/g" config.yml
           chmod +x ./pyCheck.py
           ./pyCheck.py
           test_result=$?
@@ -140,6 +142,7 @@ jobs:
           fi
 
       - name: Delete instance if tests fail
+        if: ${{ failure() }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
