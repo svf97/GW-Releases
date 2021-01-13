@@ -85,7 +85,7 @@ jobs:
         run: |
           ami_id=$(aws ec2 describe-images --filters "Name=name,Values=icap-server-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
           result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.large --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-icap-server}, {Key=Team, Value=k8-proxy/icap-server}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=icap-server-${{ github.sha }}}]')
-          sleep 10m
+          sleep 2m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
           echo "$instance_id is created."
           instance_description=$(aws ec2 describe-instances --instance-ids $instance_id)
@@ -101,3 +101,7 @@ jobs:
           echo ::set-output name=instance_ip::$instance_ip
           echo ::set-output name=instance_id::$instance_id
           echo ::set-output name=ami_id::$ami_id
+          instance_id="${{ steps.get_id.outputs.instance_id }}"
+          if [[ ! -z "$instance_id" ]]; then
+            echo "$instance_id" | while IFS= read -r line ; do aws ec2 terminate-instances --instance-ids $line || true; done
+          fi
