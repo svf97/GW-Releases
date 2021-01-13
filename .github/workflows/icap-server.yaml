@@ -7,6 +7,11 @@ env:
 # events but only for the master branch
 on:
   workflow_dispatch:
+    inputs:
+      extra_regions:
+        description: Extra regions where AMI should be published. Pass multiple regions with comma separated.
+        default: eu-west-1
+        required: false
   push:
     branches: [ main ]
     paths-ignore:
@@ -92,7 +97,7 @@ jobs:
               exit -1
           fi
           instance_ip=$(echo $instance_description | jq -r ".Reservations[0].Instances[0].PublicIpAddress")
-          echo "Add the IP to the hosts file: ${instance_ip}"
+          echo "Connect to the ICAP server at: ${instance_ip}"
           echo ::set-output name=instance_ip::$instance_ip
           echo ::set-output name=instance_id::$instance_id
           echo ::set-output name=ami_id::$ami_id
