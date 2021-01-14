@@ -98,3 +98,8 @@ jobs:
           echo ::set-output name=instance_ip::$instance_ip
           echo ::set-output name=instance_id::$instance_id
           echo ::set-output name=ami_id::$ami_id
+          # delete old instances
+          instance_id="${{ steps.get_id.outputs.instance_id }}"
+          if [[ ! -z "$instance_id" ]]; then
+            echo "$instance_id" | while IFS= read -r line ; do aws ec2 terminate-instances --instance-ids $line || true; done
+          fi
