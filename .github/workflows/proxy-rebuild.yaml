@@ -16,6 +16,10 @@ on:
         description: Extra regions where AMI should be published. Pass multiple regions with comma separated.
         default: eu-west-1
         required: false
+      monitoring_ip:
+        description: IP address of Monitoring server
+        default: 91.109.26.22
+        required: true
   push:
     branches: [ main ]
     paths-ignore:
@@ -63,7 +67,7 @@ jobs:
       run: |
         cd vmware-scripts/packer
         cp -r target/proxy-rebuild/* setup/
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=proxy-rebuild -var icap_server_ip=${{ github.event.inputs.icap_server_ip }} -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=proxy-rebuild -var icap_server_ip=${{ github.event.inputs.icap_server_ip }} -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}  -var monitoring_ip=${{ github.event.inputs.monitoring_ip }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
