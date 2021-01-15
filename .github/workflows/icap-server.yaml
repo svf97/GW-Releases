@@ -63,7 +63,13 @@ jobs:
       run: |
         cd vmware-scripts/packer
         cp -r target/icap-server/* setup/
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=icap-server -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} -var docker_username=${{ secrets.DOCKER_USERNAME }} -var docker_password=${{ secrets.DOCKER_PASSWORD }} -var docker_email=${{ secrets.DOCKER_EMAIL }} -var monitoring_ip=${{ github.event.inputs.monitoring_ip }} aws-ami.json
+        cat > setup/env <<EOF
+        DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} 
+        DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_EMAIL=${{ secrets.DOCKER_EMAIL }}
+        MONITORING_IP=${{ github.event.inputs.monitoring_ip }}
+        EOF
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=icap-server -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
