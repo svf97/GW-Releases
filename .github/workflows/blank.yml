@@ -30,7 +30,8 @@ jobs:
 
       - name: Update submodules
         run: |
-          git submodule foreach --recursive
+           git submodule status --recursive
+           
           
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
