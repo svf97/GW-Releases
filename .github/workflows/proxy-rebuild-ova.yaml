@@ -99,7 +99,7 @@ jobs:
         VM_PASSWORD: "${{ secrets.SSH_PASSWORD }}"
         VM_GATEWAY: "${{ secrets.VM_GATEWAY }}"
         VM_NAME: "${{ env.VM_NAME }}"
-        NETMASK: "${{ env.NETMASK }}"
+        NETMASK: "${{ secrets.NETMASK }}"
 
     - name: Upload the OVA to S3
       env:
