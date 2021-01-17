@@ -100,6 +100,7 @@ jobs:
         VM_GATEWAY: "${{ secrets.VM_GATEWAY }}"
         VM_NAME: "${{ secrets.VM_NAME }}"
         NETMASK: "${{ secrets.NETMASK }}"
+        PACKER_LOG: 1
 
     - name: Upload the OVA to S3
       env:
