@@ -50,6 +50,7 @@ jobs:
       run: |
         # install packer
         cd vmware-scripts/packer
+        git submodule update --init --recursive
         curl -o packer.zip https://releases.hashicorp.com/packer/1.6.6/packer_1.6.6_linux_amd64.zip
         unzip -o packer.zip
         sudo mv packer /usr/local/bin
