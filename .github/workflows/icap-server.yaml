@@ -17,7 +17,7 @@ on:
         default: 91.109.26.22
         required: true
   push:
-    branches: [ main, fix_tests ]
+    branches: [ main ]
     paths-ignore:
       - 'aws-jmeter-test-engine'
       - 'gp-load-balancer'
