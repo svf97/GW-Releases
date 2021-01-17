@@ -106,4 +106,4 @@ jobs:
         VM_NAME: "${{ env.VM_NAME }}"
       run: |
           mv vmware-scripts/packer/output-vmware-iso/packer-$VM_NAME.ova vmware-scripts/packer/output-vmware-iso/$VM_NAME-${{ github.sha }}.ova
-          aws s3 cp ${{ env.OVA_BUILD_DIR }}/vmware-scripts/packer/output-vmware-iso/$VM_NAME-${{ github.sha }}.ova s3://glasswall-sow-ova/vms/$VM_NAME/
+          aws s3 cp ./vmware-scripts/packer/output-vmware-iso/$VM_NAME-${{ github.sha }}.ova s3://glasswall-sow-ova/vms/$VM_NAME/
