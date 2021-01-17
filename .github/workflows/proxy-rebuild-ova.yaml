@@ -85,7 +85,7 @@ jobs:
         EOF
         cp cdrom/user-data.example cdrom/user-data
         sed -i "s|GATEWAY|$VM_GATEWAY|g" cdrom/user-data
-        sed -i "s|IPADDRESS/NETMASK|$VM_HOST|g" cdrom/user-data
+        sed -i "s|IPADDRESS/NETMASK|$VM_HOST/$NETMASK|g" cdrom/user-data
         sed -i "s|NAMESERVER|8.8.8.8|g" cdrom/user-data
         mv setup setup.orig
         mv ../$VM_NAME setup
@@ -94,15 +94,16 @@ jobs:
         ESXI_HOST: "${{ secrets.ESXI_HOST }}"
         ESXI_USER: "${{ secrets.ESXI_USER }}"
         ESXI_PASSWORD: "${{ secrets.ESXI_PASSWORD }}"
-        VM_HOST: ${{ secrets.VM_HOST }}
-        VM_USER: ${{ secrets.VM_USER }}
-        VM_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-        VM_GATEWAY: ${{ secrets.VM_GATEWAY }}
-        VM_NAME: ${{ env.VM_NAME }}
+        VM_HOST: "${{ secrets.VM_HOST }}"
+        VM_USER: "${{ secrets.VM_USER }}"
+        VM_PASSWORD: "${{ secrets.SSH_PASSWORD }}"
+        VM_GATEWAY: "${{ secrets.VM_GATEWAY }}"
+        VM_NAME: "${{ env.VM_NAME }}"
+        NETMASK: "${{ env.NETMASK }}"
 
     - name: Upload the OVA to S3
       env:
-        VM_NAME: ${{ env.VM_NAME }}
+        VM_NAME: "${{ env.VM_NAME }}"
       run: |
           mv vmware-scripts/packer/output-vmware-iso/packer-$VM_NAME.ova vmware-scripts/packer/output-vmware-iso/$VM_NAME-${{ github.sha }}.ova
           aws s3 cp ${{ env.OVA_BUILD_DIR }}/vmware-scripts/packer/output-vmware-iso/$VM_NAME-${{ github.sha }}.ova s3://glasswall-sow-ova/vms/$VM_NAME/
