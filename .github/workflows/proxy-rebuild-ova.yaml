@@ -89,7 +89,7 @@ jobs:
         sed -i "s|IPADDRESS/NETMASK|$VM_HOST/$NETMASK|g" cdrom/user-data
         sed -i "s|NAMESERVER|8.8.8.8|g" cdrom/user-data
         mv setup setup.orig
-        mv ../$VM_NAME setup
+        mv ./target/$VM_NAME setup
         packer build -on-error=cleanup -var-file=vars.json esxi.json
       env:
         ESXI_HOST: "${{ secrets.ESXI_HOST }}"
