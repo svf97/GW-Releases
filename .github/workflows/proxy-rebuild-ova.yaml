@@ -90,6 +90,7 @@ jobs:
         sed -i "s|NAMESERVER|8.8.8.8|g" cdrom/user-data
         mv setup setup.orig
         mv ./target/$VM_NAME setup
+        echo "ICAP_IP=$ICAP_SERVER_IP" > setup/env
         packer build -on-error=cleanup -var-file=vars.json esxi.json
       env:
         ESXI_HOST: "${{ secrets.ESXI_HOST }}"
@@ -101,7 +102,7 @@ jobs:
         VM_GATEWAY: "${{ secrets.VM_GATEWAY }}"
         VM_NAME: "${{ secrets.VM_NAME }}"
         NETMASK: "${{ secrets.NETMASK }}"
-        PACKER_LOG: 1
+        ICAP_SERVER_IP: "${{ github.event.inputs.icap_server_ip }}"
 
     - name: Upload the OVA to S3
       env:
