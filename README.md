@@ -30,17 +30,15 @@
     - k8-rebuild
     - .github/workflows/k8-rebuild.yaml
 - There are 2 main jobs for each workflow:
-
-    - build-ami:
+    - build-ami
         - Configure AWS credentials
-        - Set up [Packer](https://github.com/k8-proxy/vmware-scripts/tree/main/packer) (**NOTE**: `k8-rebuild` uses its own [packer](https://github.com/k8-proxy/k8-rebuild/tree/f1ac7780d912daf033d3a801956dcb07b0164ac0/packer))
-        - Build AMI using Packer 
+        - Setup Packer
+        - Build AMI 
     - deploy-ami
-        - Get current instance ID and other instance IDs with the same name as current instance
-        - Deploy the instance
-        - Run [healthcheck tests](https://github.com/k8-proxy/vmware-scripts/tree/f129ec357284c61206edf36415b1b2ba403bff95/HealthCheck) on the instance
-            - if tests are successful for current instance, all previous instances are terminated
-            - if tests are failed, current instance is terminated and deleted
+        - Get current instance ID
+        - Deploy AMI to dev
+        - Run tests on instance
+        - Delete instance(s) that fail
 
 ### Workflow Requirements
     - icap-server
@@ -55,5 +53,39 @@
     - k8-rebuild
         - branch to use workflow from
 
+### ICAP Server Workflow
+- [YAML File](https://github.com/k8-proxy/GW-Releases/blob/main/.github/workflows/icap-server.yaml) 
+- build AMI
+    - Configure AWS credentials
+    - Setup [Packer](https://github.com/k8-proxy/vmware-scripts/tree/main/packer)
+    - Build AMI using Packer 
+- deploy AMI
+    - Get current instance ID and other instance IDs with the same name as current instance
+    - Deploy the instance
+    - Run [healthcheck tests](https://github.com/k8-proxy/vmware-scripts/tree/f129ec357284c61206edf36415b1b2ba403bff95/HealthCheck) on the instance
+        - if tests are successful for current instance, all previous instances are terminated
+        - if tests are failed, current instance is terminated and deleted
 
-
+### K8 Rebuild Workflow
+- [YAML File](https://github.com/k8-proxy/GW-Releases/blob/main/.github/workflows/k8-rebuild.yaml)
+- build AMI
+    - Configure AWS credentials
+    - Setup [Packer](https://github.com/k8-proxy/k8-rebuild/tree/f1ac7780d912daf033d3a801956dcb07b0164ac0/packer) 
+- deploy AMI
+    - Run [healthcheck tests](https://github.com/k8-proxy/vmware-scripts/tree/main/HealthFunctionalTests/filedrop) on the instance
+        - if tests are successful for current instance, all previous instances are terminated
+        - if tests are failed, current instance is terminated and deleted
+### Proxy Rebuild Workflow
+- [YAML File](https://github.com/k8-proxy/GW-Releases/blob/main/.github/workflows/proxy-rebuild.yaml)
+- build AMI
+    - Configure AWS credentials
+    - Setup [Packer](https://github.com/k8-proxy/vmware-scripts/tree/main/packer)
+    - Build AMI using Packer 
+- deploy AMI
+    - Get current instance ID and other instance IDs with the same name as current instance
+    - Deploy the instance
+    - Run tests on instance
+        - Download this [PDF](https://glasswallsolutions.com/wp-content/uploads/2020/01/Glasswall-d-FIRST-Technology.pdf) file
+        - Make sure it successfully has the watermark `"Glasswall Processed"`
+            - if tests are successful for current instance, all previous instances are terminated
+            - if tests are failed, current instance is terminated and deleted
