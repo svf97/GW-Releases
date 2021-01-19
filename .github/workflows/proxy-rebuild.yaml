@@ -10,7 +10,7 @@ on:
     inputs:
       icap_server_ip: 
         description: "IP address of ICAP server to be used in proxy server"
-        default: "91.211.153.139"
+        default: 54.155.107.189
         required: true
       extra_regions:
         description: Extra regions where AMI should be published. Pass multiple regions with comma separated.
@@ -65,14 +65,15 @@ jobs:
         unzip -o packer.zip
         sudo mv packer /usr/local/bin
         
-    - name: Build AMI/OVA
+    - name: Build AMI
       run: |
         cd vmware-scripts/packer
         cp -r target/proxy-rebuild/* setup/
         cat > setup/env <<EOF
         MONITORING_IP=${{ github.event.inputs.monitoring_ip }}
+        ICAP_IP=${{ github.event.inputs.icap_server_ip }}
         EOF
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=proxy-rebuild -var icap_server_ip=${{ github.event.inputs.icap_server_ip }} -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=proxy-rebuild -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
@@ -98,7 +99,7 @@ jobs:
         run: |
           ami_id=$(aws ec2 describe-images --filters "Name=name,Values=proxy-rebuild-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
           result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.large --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-proxy-rebuild}, {Key=Team, Value=k8-proxy/proxy-rebuild}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=proxy-rebuild-${{ github.sha }}}]')
-          sleep 10m
+          sleep 12m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
           echo "$instance_id is created."
           instance_description=$(aws ec2 describe-instances --instance-ids $instance_id)
