@@ -25,6 +25,7 @@ on:
       - 's-k8-proxy-rebuild'
       - 'k8-rebuild'
       - '.github/workflows/k8-rebuild.yaml'
+      - '.github/workflows/monitoring.yaml'
       - '.github/workflows/proxy-rebuild.yaml'
       - '.github/workflows/proxy-rebuild-ova.yaml'
 
