@@ -65,7 +65,7 @@ jobs:
         unzip -o packer.zip
         sudo mv packer /usr/local/bin
         
-    - name: Build AMI/OVA
+    - name: Build AMI
       run: |
         cd vmware-scripts/packer
         cp -r target/proxy-rebuild/* setup/
