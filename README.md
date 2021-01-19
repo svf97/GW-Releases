@@ -22,7 +22,7 @@
     - [icap-server](https://github.com/k8-proxy/GW-Releases/actions?query=workflow%3Aicap-server)
     - [proxy-rebuild](https://github.com/k8-proxy/GW-Releases/actions?query=workflow%3Aproxy-rebuild)
     - [k8-rebuild](https://github.com/k8-proxy/GW-Releases/actions?query=workflow%3Ak8-rebuild)
-- Each PR triggers the workflow, but the following paths are ignored:
+- Each change made to the repo triggers the workflow, but the following directories are ignored:
     - aws-jmeter-test-engine
     - gp-load-balancer
     - GW-proxy
@@ -42,7 +42,7 @@
         - Deploy AMI to dev
         - Run tests on instance
         - Delete instance(s) that fail
-        
+
     ![deploy-ami](imgs/deploy-ami.png)
 
 ### Workflow Requirements
