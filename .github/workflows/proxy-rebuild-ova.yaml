@@ -86,7 +86,7 @@ jobs:
         EOF
         cp cdrom/user-data.example cdrom/user-data
         sed -i "s|GATEWAY|$VM_GATEWAY|g" cdrom/user-data
-        sed -i "s|IPADDRESS/NETMASK|$VM_HOST/$NETMASK|g" cdrom/user-data
+        sed -i "s|IPADDRESS/NETMASK|$VM_HOST/$VM_NETMASK|g" cdrom/user-data
         sed -i "s|NAMESERVER|8.8.8.8|g" cdrom/user-data
         mv setup setup.orig
         mv ./target/$VM_NAME setup
@@ -101,7 +101,7 @@ jobs:
         VM_PASSWORD: "${{ secrets.SSH_PASSWORD }}"
         VM_GATEWAY: "${{ secrets.VM_GATEWAY }}"
         VM_NAME: "${{ secrets.VM_NAME }}"
-        NETMASK: "${{ secrets.NETMASK }}"
+        VM_NETMASK: "${{ secrets.VM_NETMASK }}"
         ICAP_SERVER_IP: "${{ github.event.inputs.icap_server_ip }}"
 
     - name: Upload the OVA to S3
