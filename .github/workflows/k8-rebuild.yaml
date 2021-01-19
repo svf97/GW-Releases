@@ -15,7 +15,10 @@ on:
       - 'GW-proxy'
       - 'icap-infrastructure'
       - 's-k8-proxy-rebuild'
+      - '.github/workflows/icap-server.yaml'
       - '.github/workflows/proxy-rebuild.yaml'
+      - '.github/workflows/proxy-rebuild-ova.yaml'
+      - '.github/workflows/monitoring.yaml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
