@@ -16,3 +16,6 @@
 [submodule "GW-proxy"]
 	path = GW-proxy
 	url = https://github.com/k8-proxy/GW-proxy
+[submodule "s-k8-proxy-rebuild"]
+	path = s-k8-proxy-rebuild
+	url = https://github.com/k8-proxy/s-k8-proxy-rebuild.git
