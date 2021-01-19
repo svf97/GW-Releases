@@ -34,11 +34,16 @@
         - Configure AWS credentials
         - Setup Packer
         - Build AMI 
+
+    ![build-ami](imgs/build-ami.png)
+    
     - deploy-ami
         - Get current instance ID
         - Deploy AMI to dev
         - Run tests on instance
         - Delete instance(s) that fail
+        
+    ![deploy-ami](imgs/deploy-ami.png)
 
 ### Workflow Requirements
     - icap-server
