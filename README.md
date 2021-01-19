@@ -22,7 +22,7 @@
     - [icap-server](https://github.com/k8-proxy/GW-Releases/actions?query=workflow%3Aicap-server)
     - [proxy-rebuild](https://github.com/k8-proxy/GW-Releases/actions?query=workflow%3Aproxy-rebuild)
     - [k8-rebuild](https://github.com/k8-proxy/GW-Releases/actions?query=workflow%3Ak8-rebuild)
-- Each change made to the repo triggers the workflow, but the following directories are ignored:
+- Each commit made to the main branch triggers the workflow, but the following directories are ignored:
     - aws-jmeter-test-engine
     - gp-load-balancer
     - GW-proxy
