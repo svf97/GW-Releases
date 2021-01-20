@@ -7,9 +7,6 @@
 [submodule "icap-infrastructure"]
 	path = icap-infrastructure
 	url = https://github.com/k8-proxy/icap-infrastructure
-[submodule "s-k8-proxy-rebuild"]
-	path = s-k8-proxy-rebuild
-	url = https://github.com/k8-proxy/s-k8-proxy-rebuild
 [submodule "gp-load-balancer"]
 	path = gp-load-balancer
 	url = https://github.com/k8-proxy/gp-load-balancer
@@ -19,3 +16,6 @@
 [submodule "GW-proxy"]
 	path = GW-proxy
 	url = https://github.com/k8-proxy/GW-proxy
+[submodule "s-k8-proxy-rebuild"]
+	path = s-k8-proxy-rebuild
+	url = https://github.com/k8-proxy/s-k8-proxy-rebuild.git

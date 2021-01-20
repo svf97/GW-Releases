@@ -1,6 +1,6 @@
 # GW-Releases
 
-![image](https://user-images.githubusercontent.com/64204445/104037934-de688e00-51fa-11eb-84a1-990d1564a34e.png)
+![Alt text](https://github.com/samarthdd/GW-Releases/blob/main/graph.png)
 
 ## Relevant Repos
 
@@ -94,3 +94,4 @@
         - Make sure it successfully has the watermark `"Glasswall Processed"`
             - if tests are successful for current instance, all previous instances are terminated
             - if tests are failed, current instance is terminated and deleted
+>>>>>>> upstream/main
