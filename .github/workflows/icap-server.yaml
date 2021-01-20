@@ -1,6 +1,6 @@
-# This is a basic workflow to help you get started with Actions
+# This is a workflow to build AMI with ICAP server
 
-name: proxy-rebuild
+name: icap-server
 env:
   AWS_DEFAULT_REGION: eu-west-1
 # Controls when the action will run. Triggers the workflow on push or pull request
@@ -8,10 +8,6 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      icap_server_ip: 
-        description: "IP address of ICAP server to be used in proxy server"
-        default: 54.155.107.189
-        required: true
       extra_regions:
         description: Extra regions where AMI should be published. Pass multiple regions with comma separated.
         default: eu-west-1
@@ -26,12 +22,13 @@ on:
       - 'aws-jmeter-test-engine'
       - 'gp-load-balancer'
       - 'GW-proxy'
-      - 'icap-infrastructure'
+      - 's-k8-proxy-rebuild'
       - 'k8-rebuild'
       - '.github/workflows/k8-rebuild.yaml'
-      - '.github/workflows/icap-server.yaml'
-      - '.github/workflows/proxy-rebuild-ova.yaml'
       - '.github/workflows/monitoring.yaml'
+      - '.github/workflows/proxy-rebuild.yaml'
+      - '.github/workflows/proxy-rebuild-ova.yaml'
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build-ami:
@@ -65,15 +62,17 @@ jobs:
         unzip -o packer.zip
         sudo mv packer /usr/local/bin
         
-    - name: Build AMI
+    - name: Build AMI/OVA
       run: |
         cd vmware-scripts/packer
-        cp -r target/proxy-rebuild/* setup/
+        cp -r target/icap-server/* setup/
         cat > setup/env <<EOF
+        DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} 
+        DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_EMAIL=${{ secrets.DOCKER_EMAIL }}
         MONITORING_IP=${{ github.event.inputs.monitoring_ip }}
-        ICAP_IP=${{ github.event.inputs.icap_server_ip }}
         EOF
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=proxy-rebuild -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=icap-server -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
@@ -87,7 +86,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         run: |
           # instance_id="${{ steps.deploy.outputs.instance_id }}"
-          instance_id=$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=dev-proxy-rebuild' "Name=instance-state-name,Values=running" --output text --query 'Reservations[*].Instances[*].InstanceId')
+          instance_id=$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=dev-icap-server' "Name=instance-state-name,Values=running" --output text --query 'Reservations[*].Instances[*].InstanceId')
           echo ::set-output name=instance_id::$instance_id
           
       - name: Deploy AMI to dev
@@ -97,9 +96,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         run: |
-          ami_id=$(aws ec2 describe-images --filters "Name=name,Values=proxy-rebuild-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
-          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.large --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-proxy-rebuild}, {Key=Team, Value=k8-proxy/proxy-rebuild}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=proxy-rebuild-${{ github.sha }}}]')
-          sleep 12m
+          ami_id=$(aws ec2 describe-images --filters "Name=name,Values=icap-server-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
+          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.large --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-icap-server}, {Key=Team, Value=k8-proxy/icap-server}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=icap-server-${{ github.sha }}}]' --block-device-mappings 'DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=20,VolumeType=gp2}')
+          sleep 10m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
           echo "$instance_id is created."
           instance_description=$(aws ec2 describe-instances --instance-ids $instance_id)
@@ -111,10 +110,16 @@ jobs:
               exit -1
           fi
           instance_ip=$(echo $instance_description | jq -r ".Reservations[0].Instances[0].PublicIpAddress")
-          echo "Add the IP to the hosts file: ${instance_ip}"
+          echo "Connect to the ICAP server at: ${instance_ip}"
           echo ::set-output name=instance_ip::$instance_ip
           echo ::set-output name=instance_id::$instance_id
           echo ::set-output name=ami_id::$ami_id
+
+      - name: Checkout submodules
+        uses: actions/checkout@v2
+        with:
+          repository: k8-proxy/vmware-scripts
+          path: vmware-scripts
 
       - name: Run tests on the VM
         id: test
@@ -126,11 +131,15 @@ jobs:
           instance_id="${{ steps.deploy.outputs.instance_id }}"
           instance_ip="${{ steps.deploy.outputs.instance_ip }}"
           ami_id="${{ steps.deploy.outputs.ami_id }}"
-          curl -kv https://glasswallsolutions.com/wp-content/uploads/2020/01/Glasswall-d-FIRST-Technology.pdf --resolve "glasswallsolutions.com:443:$instance_ip" --output Glasswall-d-FIRST-Technology.pdf
-          cat Glasswall-d-FIRST-Technology.pdf | grep "Glasswall Processed"
+          sudo apt-get -y install c-icap
+          cd vmware-scripts/HealthCheck
+          sed -i "/icmp/I,+1 d" config.yml
+          sed -i "/httpstring/I,+2 d" config.yml
+          sed -i "s/54.77.168.168/$instance_ip/g" config.yml
+          chmod +x ./pyCheck.py
+          ./pyCheck.py
           test_result=$?
           if [[ $test_result -ne 0 ]];then
-            echo "Proxy test failed"
             echo ::set-output name=test_result::$test_result
           else
             echo "Tests are successfully on the new instance, terminating old instance."
@@ -140,6 +149,7 @@ jobs:
               echo "$instance_id" | while IFS= read -r line ; do aws ec2 terminate-instances --instance-ids $line || true; done
             fi
           fi
+
       - name: Delete instance if tests fail
         if: ${{ failure() }}
         env:
