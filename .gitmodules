@@ -19,3 +19,6 @@
 [submodule "s-k8-proxy-rebuild"]
 	path = s-k8-proxy-rebuild
 	url = https://github.com/k8-proxy/s-k8-proxy-rebuild.git
+[submodule "k8-rebuild-folder-to-folder"]
+	path = k8-rebuild-folder-to-folder
+	url = https://github.com/k8-proxy/k8-rebuild-folder-to-folder.git
