@@ -75,8 +75,6 @@ class Tree(object):
         label = self.data['name']
         label = label + "-"
 
-        if with_url and 'url' in self.data and self.data['url']:
-            label += sep + self.data['url'].replace("https://github.com/", "")
         json=self.get_submodules_json()
 
         for each in json:
@@ -89,6 +87,10 @@ class Tree(object):
                 label +=  f"tag_id={tag}"
                 label = label + "\n"
                 #label += sep +f"commit_id={commit_id}"
+
+        if with_url and 'url' in self.data and self.data['url']:
+            label += sep + self.data['url'].replace("https://github.com/", "")
+            
         return label
 
     def get_submodules_json(self):
