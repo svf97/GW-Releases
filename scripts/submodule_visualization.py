@@ -90,7 +90,7 @@ class Tree(object):
 
         if with_url and 'url' in self.data and self.data['url']:
             label += sep + self.data['url'].replace("https://github.com/", "")
-            
+
         return label
 
     def get_submodules_json(self):
