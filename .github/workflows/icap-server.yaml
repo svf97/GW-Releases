@@ -15,7 +15,7 @@ on:
       monitoring_ip:
         description: IP address of Monitoring server
         default: 91.109.26.22
-        required: true
+        required: true              
   push:
     branches: [ main ]
     paths-ignore:
@@ -71,6 +71,8 @@ jobs:
         DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
         DOCKER_EMAIL=${{ secrets.DOCKER_EMAIL }}
         MONITORING_IP=${{ github.event.inputs.monitoring_ip }}
+        MONITORING_USER=${{ secrets.MONITORING_USER }}
+        MONITORING_PASSWORD=${{ secrets.MONITORING_PASSWORD }}
         EOF
         packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=icap-server -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
