@@ -128,6 +128,7 @@ jobs:
         with:
           repository: k8-proxy/vmware-scripts
           path: vmware-scripts
+          ref: icap-ova
 
       - name: Run tests on the VM
         id: test
