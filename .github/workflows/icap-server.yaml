@@ -141,6 +141,7 @@ jobs:
           ami_id="${{ steps.deploy.outputs.ami_id }}"
           sudo apt-get -y install c-icap
           cd vmware-scripts/HealthCheck
+          git checkout icap-ova # TODO: remove this
           sed -i "/icmp/I,+1 d" config.yml
           sed -i "/httpstring/I,+2 d" config.yml
           sed -i "s/54.77.168.168/$instance_ip/g" config.yml
