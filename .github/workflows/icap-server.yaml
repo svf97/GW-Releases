@@ -14,7 +14,7 @@ on:
         required: false
       extra_regions:
         description: Extra regions where AMI should be published. Pass multiple regions with comma separated.
-        default: eu-west-1,eu-west-2,eu-west-3,us-east-2,us-east-1,us-west-1	
+        default: eu-west-1,eu-west-2,eu-west-3,us-east-2,us-east-1,us-west-1
         required: false
       monitoring_ip:
         description: IP address of Monitoring server
