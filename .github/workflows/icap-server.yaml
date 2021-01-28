@@ -8,14 +8,22 @@ env:
 on:
   workflow_dispatch:
     inputs:
+      icap_branch:
+        description: icap-infrastructe branch to be used
+        default: k8-develop
+        required: false
       extra_regions:
         description: Extra regions where AMI should be published. Pass multiple regions with comma separated.
-        default: eu-west-1,eu-west-2,eu-west-3,us-east-2,us-east-1,us-west-1	
+        default: eu-west-1,eu-west-2,eu-west-3,us-east-2,us-east-1,us-west-1
         required: false
       monitoring_ip:
         description: IP address of Monitoring server
         default: 91.109.26.22
-        required: true              
+        required: true
+      create_ova:
+        description: Create OVA
+        default: "true"
+        required: true
   push:
     branches: [ main ]
     paths-ignore:
@@ -73,8 +81,11 @@ jobs:
         MONITORING_IP=${{ github.event.inputs.monitoring_ip }}
         MONITORING_USER=${{ secrets.MONITORING_USER }}
         MONITORING_PASSWORD=${{ secrets.MONITORING_PASSWORD }}
+        SSH_PASSWORD=${{ secrets.ICAP_SSH_PASSWORD }}
+        ICAP_BRANCH=${{ github.event.inputs.icap_branch }}
         EOF
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=icap-server -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
+        sed -i 's/<vm_name>/icap-server/g' ova-export.json
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=icap-server -var create_ova=${{ github.event.inputs.create_ova }} -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
