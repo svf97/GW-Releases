@@ -11,7 +11,7 @@ my_headers                  = {'User-Agent': 'Baker371'}
 git_token                   = os.getenv('GIT_TOKEN')
 git_headers                 = {'Authorization': f'token {git_token}', 'User-Agent': 'Baker371'}
 repo_url                    = 'https://api.github.com/users/k8-proxy/repos'
-bucket                      = 'wmware-data-visualisation'
+bucket                      = 'wmwaredata'
 fileName                    = 'releases.json'
 s3                          = boto3.client('s3')
 
