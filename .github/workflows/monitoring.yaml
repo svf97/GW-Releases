@@ -55,9 +55,8 @@ jobs:
     - name: Build AMI/OVA
       run: |
         cd vmware-scripts/packer
-        cp -r target/logtrixia/setup/* setup/
-        echo "${{ secrets.ES01_PRIVATE_KEY }}" 
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=monitoring-server -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} -var es01_private_key=${{ secrets.ES01_PRIVATE_KEY }} -var es02_private_key=${{ secrets.ES02_PRIVATE_KEY }} -var es03_private_key=${{ secrets.ES03_PRIVATE_KEY }} -var kib01_private_key=${{ secrets.KIB01_PRIVATE_KEY }} aws-ami.json
+        cp -r target/logtrixia/setup/* setup/ 
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=monitoring-server -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
