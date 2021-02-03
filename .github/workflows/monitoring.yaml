@@ -7,6 +7,11 @@ env:
 # events but only for the master branch
 on:
   workflow_dispatch:
+    inputs:
+      elastic_ip:
+        description: Elastic IP of Monitoring VM
+        default: 52.30.24.9
+        required: true
   push:
     branches: [ main, monitoring_workflow ]
     paths-ignore:
@@ -81,9 +86,12 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         run: |
           ami_id=$(aws ec2 describe-images --filters "Name=name,Values=monitoring-server-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
-          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t3.2xlarge --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-monitoring-server}, {Key=Team, Value=k8-proxy/monitoring-server}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=monitoring-server-${{ github.sha }}}]')
+          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t3.2xlarge --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-monitoring-server}, {Key=Team, Value=k8-proxy/monitoring-server}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=monitoring-server-${{ github.sha }}}]')          
           sleep 10m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
+          ip_associate=$(aws ec2 associate-address --instance-id $instance_id --public-ip ${{ github.event.inputs.elastic_ip }})
+          sleep 5
+          echo $ip_associate
           echo "$instance_id is created."
           instance_description=$(aws ec2 describe-instances --instance-ids $instance_id)
           instance_state=$(echo $instance_description | jq -r ".Reservations[0].Instances[0].State.Name")
