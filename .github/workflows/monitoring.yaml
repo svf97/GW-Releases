@@ -56,7 +56,8 @@ jobs:
       run: |
         cd vmware-scripts/packer
         cp -r target/logtrixia/setup/* setup/
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=monitoring-server -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
+        echo "${{ secrets.ES01_PRIVATE_KEY }}" 
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=monitoring-server -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} -var es01_private_key=${{ secrets.ES01_PRIVATE_KEY }} -var es02_private_key=${{ secrets.ES02_PRIVATE_KEY }} -var es03_private_key=${{ secrets.ES03_PRIVATE_KEY }} -var kib01_private_key=${{ secrets.KIB01_PRIVATE_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
@@ -81,7 +82,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         run: |
           ami_id=$(aws ec2 describe-images --filters "Name=name,Values=monitoring-server-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
-          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.large --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-monitoring-server}, {Key=Team, Value=k8-proxy/monitoring-server}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=monitoring-server-${{ github.sha }}}]')
+          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t3.2xlarge --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-monitoring-server}, {Key=Team, Value=k8-proxy/monitoring-server}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=monitoring-server-${{ github.sha }}}]')
           sleep 10m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
           echo "$instance_id is created."
