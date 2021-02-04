@@ -1,48 +1,83 @@
 import boto3
-import urllib3
 import json
 import os
+import requests
+import pandas as pd
+import warnings
 
-urllib3.disable_warnings()
+from pandas import json_normalize
 
-# Declaring variables
-http                        =  urllib3.PoolManager()
-my_headers                  = {'User-Agent': 'Baker371'}
-git_token                   = os.getenv('GIT_TOKEN')
-git_headers                 = {'Authorization': f'token {git_token}', 'User-Agent': 'Baker371'}
-repo_url                    = 'https://api.github.com/users/k8-proxy/repos'
+warnings.filterwarnings('ignore')
+
+
 bucket                      = 'wmwaredata'
 fileName                    = 'releases.json'
 s3                          = boto3.client('s3')
+git_token                   = os.getenv('GIT_TOKEN')
+git_headers                 = {'Authorization': f'token {git_token}'}
+
 
 def lambda_handler(event, context):
-    # Listing all the repos
-    repos                   = []
-    resp                    = http.request('GET',repo_url,headers=my_headers)
-    resm                    = resp.data
-    resn                    = json.loads(resm.decode('utf8'))
+
+    # Listing repos
+    resn                = requests.get("https://api.github.com/users/k8-proxy/repos").json()
+    ra                  = json_normalize(resn, max_level=1)
+    ran                 = ra[['id','name', 'html_url']]
+    df1                 = pd.DataFrame(ran)
+    df1                 = df1.rename({'html_url':'repo_url'}, axis=1)
+    repos               = []
+
     for element in resn:
-      ids                   = element['id']
+      ids               = element['id']
       repos.append(ids)
 
-    # Getting release data from all repos
-    gitdata                 =   []
+    # Getting release data
+    data                =   []
     for repo in repos:
-      my_url                =  f'https://api.github.com/repositories/{repo}/releases'
-      res                   =  http.request('GET',my_url,headers=git_headers)
-      myres                 =  json.loads(res.data)
-      gitdata.append(myres)
-      uploads   = bytes(json.dumps(gitdata, indent=4, sort_keys=True, default=str).encode('UTF-8'))
+      url               = f'https://api.github.com/repositories/{repo}/releases'
+      res               = requests.get(url, headers=git_headers).json()
+      data1             = json_normalize(res, max_level=1)
+      temp_df           = pd.DataFrame(data1)
+      data.append(data1 )
+      df2               = pd.concat(data, ignore_index=True)
 
-      # Uploading JSON file to s3 bucket
-      s3.put_object(Bucket=bucket, Key=fileName, Body=uploads)
+    df2                 = df2[['html_url','tag_name', 'published_at','body']]
+
+    # Merging release and repo data
+    df1['join']         = 1
+    df2['join']         = 1
+    df                  = df1.merge(df2, on='join').drop('join', axis=1)
+
+    df2.drop('join', axis=1, inplace=True)
+
+    # Finding a matching name in the url
+    df['match']       = [x[0] in x[1] for x in zip(df['name'], df['html_url'])]
+    df                = df.loc[df['match'] == True]
+
+    # Polishing results
+    df.reset_index(drop=True, inplace=True)
+    df                = df[['name','repo_url','body','tag_name', 'published_at']]
+    df                = df.rename({'name':'repo_repo'}, axis=1)
+    df                = df.rename({'body':'release_name'}, axis=1)
+    df                = df.rename({'tag_name':'release_tag'}, axis=1)
+    df                = df.rename({'published_at':'release_date'}, axis=1)
+
+    # Creating a JSON file
+   
+    with open(fileName, 'w', encoding='utf-8') as file:
+        key = df.to_json (file, orient ='records', indent=4)
+        
+    filepath = '/tmp/' + key
+
+    # Uploading JSON file to s3 bucket
+    s3.put_object(bucket, key, filepath)
 
     message = {
       'message': 'JSON file succesfully created and uploaded to S3'
        }
-    
+
     return {
        'statusCode': 200,
-       'headers': {'Content-Type': 'application/json'},
+       'headers': {'event-Type': 'application/json'},
        'body': json.dumps(message)
        }
