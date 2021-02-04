@@ -2,7 +2,9 @@
 
 name: Upload Lambda Function
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
 
 jobs:
   deploy:
