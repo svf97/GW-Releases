@@ -1,7 +1,6 @@
 [submodule "vmware-scripts"]
 	path = vmware-scripts
 	url = https://github.com/k8-proxy/vmware-scripts.git
-	branch = LbHealthCheck-Icap
 [submodule "k8-rebuild"]
 	path = k8-rebuild
 	url = https://github.com/k8-proxy/k8-rebuild
