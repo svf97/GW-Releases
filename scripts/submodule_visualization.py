@@ -4,8 +4,7 @@ import subprocess
 import pydot
 import click
 import requests
-
-
+from requests.auth import HTTPBasicAuth
 
 #RUN : python ./scripts/submodule_visualization.py ../GW-Releases
 
@@ -82,13 +81,13 @@ class Tree(object):
         parent_repo=None
         api_url = "https://api.github.com/repos/%s" % repo_name
         details = requests.get(api_url)
+        print(details)
         if details.status_code is 200:
             json = details.json()
             if "parent" in json:
                 parent_repo = json["parent"]["full_name"]
 
         return parent_repo
-
 
     def get_Label(self, with_url, sep=' - '):
         label = ""
