@@ -73,7 +73,8 @@ jobs:
         MONITORING_IP=${{ github.event.inputs.monitoring_ip }}
         ICAP_IP=${{ github.event.inputs.icap_server_ip }}
         EOF
-        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=proxy-rebuild -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
+        RANDOM_STR=${{ github.sha }}-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1 )
+        packer build -color=false -on-error=cleanup -var github_sha=${RANDOM_STR} -var vm_name=proxy-rebuild -var region=${{ env.AWS_DEFAULT_REGION }} -var extra_regions=${{ github.event.inputs.extra_regions }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
