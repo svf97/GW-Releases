@@ -48,12 +48,15 @@ class Tree(object):
         return master_tag
 
     def buildGraph(self, graph, parent, indentation, graphmode, with_url,level=0):
-        color="#ACE7EF"
+        color="#B8CFE0"
 
         if level==0:
             color="#FFBEBC"
         elif level==1:
             color="#FFF5BA"
+        elif level==2:
+            color = "#ACE7EF"
+
 
         label = self.get_Label(with_url, "\n")
 
@@ -81,7 +84,6 @@ class Tree(object):
         parent_repo=None
         api_url = "https://api.github.com/repos/%s" % repo_name
         details = requests.get(api_url)
-        print(details)
         if details.status_code is 200:
             json = details.json()
             if "parent" in json:
