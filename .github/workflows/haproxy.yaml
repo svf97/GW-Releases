@@ -11,14 +11,23 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'aws-jmeter-test-engine'
+      - 'diagrams'
+      - 'documentation'
       - 'GW-proxy'
+      - 'imgs'
       - 'icap-infrastructure'
+      - 'k8-rebuild'
+      - 'k8-rebuild-folder-to-folder'
+      - 'lambda'
       - 's-k8-proxy-rebuild'
+      - 'scripts'
+      - 'vmware-scripts'
       - '.github/workflows/icap-server.yaml'
       - '.github/workflows/proxy-rebuild.yaml'
       - '.github/workflows/proxy-rebuild-ova.yaml'
       - '.github/workflows/k8-rebuild.yaml'
       - '.github/workflows/monitoring.yaml'
+      - '.github/workflows/visualization.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
