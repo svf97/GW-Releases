@@ -77,7 +77,9 @@ jobs:
     - name: Build AMI/OVA
       run: |
         cd vmware-scripts/packer
+        echo "cd"
         cp -r target/icap-server/* setup/
+        echo "cp"
         cat > setup/env <<EOF
         DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} 
         DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
@@ -89,7 +91,9 @@ jobs:
         ICAP_BRANCH=${{ github.event.inputs.icap_branch }}
         ICAP_SOW_BRANCH=${{ github.event.inputs.sow_branch }}
         EOF
+        echo "cat"
         sed -i 's/<vm_name>/icap-server/g' ova-export.json
+        echo "sed"
         GITHUB_SHA=${{ github.sha }}
         RANDOM_STR=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1 )
         RANDOM_STR=${GITHUB_SHA}-${RANDOM_STR}
