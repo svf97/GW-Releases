@@ -79,7 +79,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         run: |
           ami_id=$(aws ec2 describe-images --filters "Name=name,Values=haproxy-icap-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
-          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.medium --key-name naders --security-group-ids sg-0996adad67e6beef0 --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-haproxy-icap}, {Key=Team, Value=haproxy-icap}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=haproxy-icap-${{ github.sha }}}]')
+          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.medium --key-name naders --security-group-ids sg-0996adad67e6beef0 --tag-specifications 'ResourceType=instance, Tags=[{Key=Team, Value=haproxy-icap}, {Key=Owner, Value=githubactionAMIpacker}, {Key=Scope, Value=Export-OVA}, {Key=Delete, Value=false}, {Key=AMI_Name, Value=haproxy-icap-${{ github.sha }}}]')
           sleep 10m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
           echo "$instance_id is created."
