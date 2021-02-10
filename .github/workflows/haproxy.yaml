@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: k8-rebuild
+name: HAProxy-ICAP
 env:
   AWS_DEFAULT_REGION: eu-west-1
 # Controls when the action will run. Triggers the workflow on push or pull request
@@ -11,14 +11,13 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'aws-jmeter-test-engine'
-      - 'gp-load-balancer'
       - 'GW-proxy'
       - 'icap-infrastructure'
       - 's-k8-proxy-rebuild'
       - '.github/workflows/icap-server.yaml'
       - '.github/workflows/proxy-rebuild.yaml'
       - '.github/workflows/proxy-rebuild-ova.yaml'
-      - '.github/workflows/haproxy.yaml'
+      - '.github/workflows/k8-rebuild.yaml'
       - '.github/workflows/monitoring.yaml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -33,6 +32,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: true
+
 
     # - name: Update submodules
     #   run: |
@@ -49,7 +49,9 @@ jobs:
     # build artifact
     - name: Setup Packer
       run: |
-        cd k8-rebuild/packer
+        # install packer
+        cd gp-load-balancer/packer
+        git submodule update --init --recursive
         curl -o packer.zip https://releases.hashicorp.com/packer/1.6.6/packer_1.6.6_linux_amd64.zip
         unzip -o packer.zip
         sudo mv packer /usr/local/bin
@@ -57,11 +59,9 @@ jobs:
         
     - name: Build AMI/OVA
       run: |
-        cd k8-rebuild
+        cd gp-load-balancer
         chmod +x packer/ova-check.sh
-        RANDOM_STR=${{ github.sha }}-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1 )
-        packer build -color=false -on-error=cleanup -var github_sha=${RANDOM_STR} -var vm_name=k8-rebuild -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} packer/aws-ova.json
-
+        packer build -color=false -on-error=cleanup -var github_sha=${{ github.sha }} -var vm_name=haproxy-icap -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} packer/aws-ova.json
   deploy-ami:
     runs-on: ubuntu-latest
     needs: build-ami
@@ -74,7 +74,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         run: |
           # instance_id="${{ steps.deploy.outputs.instance_id }}"
-          instance_id=$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=dev-k8-rebuild' "Name=instance-state-name,Values=running" --output text --query 'Reservations[*].Instances[*].InstanceId')
+          instance_id=$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=dev-haproxy-icap' "Name=instance-state-name,Values=running" --output text --query 'Reservations[*].Instances[*].InstanceId')
           echo ::set-output name=instance_id::$instance_id
           
       - name: Deploy AMI to dev
@@ -84,8 +84,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         run: |
-          ami_id=$(aws ec2 describe-images --filters "Name=name,Values=k8-rebuild-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
-          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.large --key-name k8-rebuild --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-k8-rebuild}, {Key=Delete,Value=No},{Key=Scope,Value=icap-server}, {Key=Team, Value=k8-proxy/k8-rebuild}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=k8-rebuild-${{ github.sha }}}]')
+          ami_id=$(aws ec2 describe-images --filters "Name=name,Values=haproxy-icap-${{ github.sha }}" --query 'Images[*].[ImageId]' --output text)
+          result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t2.large --key-name haproxy-icap --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-haproxy-icap}, {Key=Team, Value=haproxy-icap}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=haproxy-icap-${{ github.sha }}}]')
           sleep 10m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
           echo "$instance_id is created."
