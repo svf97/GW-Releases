@@ -92,7 +92,7 @@ jobs:
           result=$(aws ec2 run-instances --image-id $ami_id --count 1 --instance-type t3.2xlarge --key-name packer --security-group-ids sg-0120400d5eefb0b9e --tag-specifications 'ResourceType=instance, Tags=[{Key=Name,Value=dev-monitoring-server}, {Key=Delete,Value=No},{Key=Scope,Value=icap-server}, {Key=Team, Value=k8-proxy/monitoring-server}, {Key=Owner, Value=githubactionAMIpacker}, {Key=AMI_Name, Value=monitoring-server-${{ github.sha }}}]')          
           sleep 10m
           instance_id=$(echo $result | jq -r ".Instances[0].InstanceId")
-          ip_associate=$(aws ec2 associate-address --instance-id $instance_id --public-ip ${{ github.event.inputs.elastic_ip }})
+          ip_associate=$(aws ec2 associate-address --instance-id $instance_id --public-ip 52.30.24.9)
           sleep 5
           echo $ip_associate
           echo "$instance_id is created."
