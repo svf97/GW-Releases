@@ -7,7 +7,8 @@ env:
 # events but only for the master branch
 on:
   workflow_dispatch:
-    create_ova:
+    inputs:
+      create_ova:
         description: Create OVA
         default: "false"
         required: true
