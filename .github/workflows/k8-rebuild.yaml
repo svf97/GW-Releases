@@ -67,6 +67,7 @@ jobs:
         chmod +x ova-check.sh
         cat > setup/env <<EOF
         SSH_PASSWORD=${{ secrets.ICAP_SSH_PASSWORD }}
+        BRANCH=sow_version
         EOF
         sed -i 's/<vm_name>/k8-rebuild-centos/g' ova-export.json
         RANDOM_STR=${{ github.sha }}-${{ github.run_number }}
