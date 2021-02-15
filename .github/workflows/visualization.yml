@@ -24,6 +24,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it  
     - uses: actions/checkout@v2
       with:
+        repository: k8-proxy/GW-Releases
+        token: ${{secrets.GITHUBPAT}}
         submodules: recursive           
     - name: Set up Python 3.7
       uses: actions/setup-python@v2
@@ -37,23 +39,30 @@ jobs:
         pip install requests
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         
-    - name: Delete older graph
+    - name: Update graph
       run: |
-        git config user.name "$GITHUB_ACTOR"
-        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
+        git config user.name github-actions@github.com
+        git config user.email github-actions
+        BRANCH_NAME=visualization-${GITHUB_SHA::7}
+        git remote -v
+        git checkout -b $BRANCH_NAME
+        
+        # delete older graph
         rm graph.png
-        git status
         git add 'graph.png'
         git commit -m "deleted older graph"
-        
-    - name: Create Graph and push it to repo
-      run: |
+
         python scripts/submodule_visualization.py ../GW-Releases
+        
+        # add new graph
         git status
         git add 'graph.png'
-        git commit -m "Updates graph"
-        git push
+        git commit -m "Updates new graph"
+        git push -u origin $BRANCH_NAME
         
-
-
+        # create a pull request from a new branch to target branch, merge the PR and delete the source branch.
+        gh pr create --title "Update visualization for new tag" --body ""
+        sleep 5s
+        gh pr merge $BRANCH_NAME -s -d
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUBPAT }}
