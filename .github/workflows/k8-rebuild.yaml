@@ -7,6 +7,10 @@ env:
 # events but only for the master branch
 on:
   workflow_dispatch:
+    create_ova:
+        description: Create OVA
+        default: "false"
+        required: true
   push:
     branches: [ main ]
     paths-ignore:
@@ -64,7 +68,7 @@ jobs:
         SSH_PASSWORD=${{ secrets.ICAP_SSH_PASSWORD }}
         EOF
         RANDOM_STR=${{ github.sha }}-${{ github.run_number }}
-        packer build -color=false -on-error=cleanup -var github_sha=${RANDOM_STR} -var vm_name=k8-rebuild -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
+        packer build -color=false -on-error=cleanup -var github_sha=${RANDOM_STR} -var vm_name=k8-rebuild -var create_ova=${{ github.event.inputs.create_ova }} -var region=${{ env.AWS_DEFAULT_REGION }} -var aws_access_key=${{ secrets.AWS_ACCESS_KEY }} -var aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws-ami.json
 
   deploy-ami:
     runs-on: ubuntu-latest
